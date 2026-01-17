@@ -1,7 +1,35 @@
 import express from 'express';
 import Search from '../models/Search.js';
+import { resolveSources } from '../services/geminiService.js';
 
 const router = express.Router();
+
+// POST /api/search/resolve-sources - Resolve social media URLs using Gemini
+router.post('/resolve-sources', async (req, res) => {
+  try {
+    const { query } = req.body;
+
+    if (!query) {
+      return res.status(400).json({
+        success: false,
+        error: 'Missing required field: query',
+      });
+    }
+
+    const sources = await resolveSources(query);
+
+    res.json({
+      query,
+      sources,
+    });
+  } catch (error) {
+    console.error('Error resolving sources:', error);
+    res.status(500).json({
+      success: false,
+      error: error.message,
+    });
+  }
+});
 
 // POST /api/search - Save a new search with Gemini result
 router.post('/', async (req, res) => {
